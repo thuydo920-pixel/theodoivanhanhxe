@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Quản lý xe & phương tiện vận hành</title>
+<style>
+:root{--bg:#f4f5f7;--card:#fff;--tx:#1b1f24;--mu:#6b7280;--bd:#e3e6ea;--run:#16a34a;--idle:#d99a00;--mt:#dc2626;--off:#8b93a1;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#14171c;--card:#1d2128;--tx:#eceff3;--mu:#98a1ae;--bd:#2d333c;--run:#34d36b;--idle:#f2b632;--mt:#f26a6a;--off:#7b8493;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#14171c;--card:#1d2128;--tx:#eceff3;--mu:#98a1ae;--bd:#2d333c;--run:#34d36b;--idle:#f2b632;--mt:#f26a6a;--off:#7b8493;color-scheme:dark}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.wrap{max-width:1180px;margin:0 auto;padding:18px 14px 40px}
+header{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px;margin-bottom:14px}
+h1{font-size:20px;margin:0}.sub,.mu{color:var(--mu);font-size:13px}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--run);display:inline-block}
+.live{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--mu)}.live .dot{animation:p 1.6s infinite}
+@keyframes p{50%{opacity:.25}}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:12px}
+.stat{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:12px 14px;cursor:pointer}
+.stat.on{outline:2px solid var(--tx)}.stat b{display:block;font-size:26px;line-height:1.1}.stat span{font-size:12.5px;color:var(--mu)}
+.panel{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:12px 14px;margin-bottom:12px}
+.bar{display:flex;height:16px;border-radius:8px;overflow:hidden;background:var(--bd);margin:8px 0 6px}
+.bar div{transition:width .4s}
+.leg{display:flex;flex-wrap:wrap;gap:12px;font-size:12.5px;color:var(--mu)}.leg i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px}
+.alerts{font-size:13.5px;margin-top:8px;color:var(--mt)}
+h2{font-size:15px;margin:18px 0 8px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(225px,1fr));gap:10px}.rs{grid-template-columns:repeat(auto-fill,minmax(320px,1fr))}
+.v{background:var(--card);border:1px solid var(--bd);border-top:5px solid var(--off);border-radius:12px;padding:12px;cursor:pointer;text-align:left;font:inherit;color:inherit;width:100%}
+.v:hover{border-color:var(--mu)}.v.running{border-top-color:var(--run)}.v.idle{border-top-color:var(--idle)}.v.maint{border-top-color:var(--mt)}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}.id{font-weight:700;font-size:16px}
+.badge{font-size:12px;font-weight:600;display:inline-flex;align-items:center;gap:5px}
+.running .badge{color:var(--run)}.idle .badge{color:var(--idle)}.maint .badge{color:var(--mt)}.off .badge{color:var(--off)}
+.badge .dot{background:var(--off)}.running .badge .dot{background:var(--run);animation:p 1.6s infinite}.idle .badge .dot{background:var(--idle)}.maint .badge .dot{background:var(--mt)}
+.op{display:flex;align-items:center;gap:9px;margin-bottom:6px}
+.av{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:13px;color:#fff;background:var(--off);flex:none}
+.running .av{background:var(--run)}.idle .av{background:var(--idle)}.maint .av{background:var(--mt)}
+.op b{display:block;line-height:1.2}.op span{font-size:12.5px;color:var(--mu);display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:150px}
+.meter{height:8px;border-radius:5px;background:var(--bd);overflow:hidden;margin:4px 0}.meter div{height:100%;background:var(--run)}
+.meter.low div{background:var(--mt)}.meter.mid div{background:var(--idle)}
+.kv{display:flex;justify-content:space-between;font-size:12.5px;color:var(--mu)}.kv b{color:var(--tx)}
+dialog{border:1px solid var(--bd);border-radius:14px;background:var(--card);color:var(--tx);padding:18px;width:min(460px,94vw);max-height:92vh}
+dialog::backdrop{background:rgba(0,0,0,.45)}
+label{display:block;font-size:12.5px;color:var(--mu);margin:12px 0 4px}
+input,select{width:100%;padding:9px 10px;border-radius:8px;border:1px solid var(--bd);background:var(--bg);color:var(--tx);font:inherit}
+.btns{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
+button.b{padding:9px 16px;border-radius:8px;border:1px solid var(--bd);background:var(--bg);color:var(--tx);font:inherit;cursor:pointer}
+button.pri{background:var(--tx);color:var(--bg);border-color:var(--tx)}
+.hist{margin-top:14px;border-top:1px solid var(--bd);padding-top:10px;max-height:190px;overflow:auto}
+.h{display:flex;gap:8px;font-size:12.5px;padding:4px 0}.h time{color:var(--mu);width:88px;flex:none}
+#toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--tx);color:var(--bg);padding:9px 16px;border-radius:8px;font-size:13px;display:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div><h1>Quản lý xe & phương tiện vận hành</h1><div class="sub">2 Reach Stacker · 15 xe nâng · bấm vào xe để cập nhật</div></div>
+    <div class="live"><span class="dot"></span><span id="sync">Đang kết nối…</span> · <span id="clock"></span></div>
+  </header>
+  <div class="stats" id="stats"></div>
+  <div class="panel"><b>Hiệu suất đội xe</b><div class="bar" id="bar"></div><div class="leg" id="leg"></div><div class="alerts" id="alerts"></div></div>
+  <h2>Xe cẩu gắp Reach Stacker</h2><div class="grid rs" id="gRS"></div>
+  <h2>Xe nâng</h2><div class="grid" id="gFL"></div>
+</div>
+
+<dialog id="dlg">
+  <div style="font-weight:700;font-size:17px" id="dTitle"></div>
+  <div class="mu" id="dInfo"></div>
+  <label>Trạng thái</label>
+  <select id="fStatus"><option value="running">Đang vận hành</option><option value="idle">Chờ lệnh / nghỉ</option><option value="maint">Bảo dưỡng / sự cố</option><option value="off">Không hoạt động</option></select>
+  <label>Người vận hành</label><input id="fOp" list="ops" placeholder="Nhập hoặc chọn tên người lái"><datalist id="ops"></datalist>
+  <label>Công việc đang làm</label><input id="fTask" list="tasks" placeholder="Chọn hoặc nhập công việc">
+  <datalist id="tasks"><option>Xếp dỡ container</option><option>Đảo chuyển container trong bãi</option><option>Nâng hạ hàng trong kho</option><option>Xếp hàng lên xe tải</option><option>Hạ container từ tàu</option><option>Bảo dưỡng định kỳ</option><option>Sửa chữa sự cố</option></datalist>
+  <label>Nhiên liệu / pin: <b id="fuelV"></b>%</label><input id="fFuel" type="range" min="0" max="100" step="5">
+  <div class="btns"><button class="b" id="dCancel">Đóng</button><button class="b" id="dClear">Trả xe</button><button class="b pri" id="dSave">Lưu</button></div>
+  <div class="hist" id="hist"></div>
+</dialog>
+<div id="toast"></div>
+
+<script>
+/* Cấu hình lưu trữ cho bản tự host (Hostinger). Để trống = dùng cơ sở dữ liệu của Claude hoặc chế độ cục bộ. */
+const CONFIG={supabaseUrl:"",supabaseKey:""};
+
+const VEHICLES=[...[1,2].map(n=>({id:'RS-0'+n,type:'RS',label:'0'+n})),...Array.from({length:15},(_,i)=>({id:'FL-'+String(i+1).padStart(2,'0'),type:'FL',label:String(i+1)}))];
+const full=id=>{const v=VEHICLES.find(x=>x.id===id);return (v.type==='RS'?'Cẩu gắp ':'Xe nâng ')+v.label};
+const ST={running:'Đang vận hành',idle:'Chờ lệnh',maint:'Bảo dưỡng / sự cố',off:'Không hoạt động'};
+const COL={running:'var(--run)',idle:'var(--idle)',maint:'var(--mt)',off:'var(--off)'};
+const state={};let store=null,filter='all',cur=null;
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const get=id=>state[id]||{status:'off',operator:'',task:'',since:0,fuel:100,hours:0,log:[]};
+const live=d=>(d.hours||0)+(d.status==='running'&&d.since?(Date.now()-d.since)/36e5:0);
+const dur=ms=>{const m=Math.floor(ms/6e4);return m<1?'vừa xong':m<60?m+' phút':Math.floor(m/60)+'g '+(m%60)+'p'};
+const init=n=>n.trim().split(/\s+/).slice(-2).map(w=>w[0]).join('').toUpperCase()||'?';
+const fmt=t=>new Date(t).toLocaleString('vi-VN',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+
+function render(){
+  const cnt={running:0,idle:0,maint:0,off:0},low=[];
+  VEHICLES.forEach(v=>{const d=get(v.id);cnt[d.status]++;if(d.fuel<=20&&d.status!=='off')low.push(full(v.id))});
+  const N=VEHICLES.length;
+  $('ops').innerHTML=[...new Set(Object.values(state).map(d=>d&&d.operator).filter(Boolean))].map(n=>`<option>${esc(n)}</option>`).join('');
+  $('stats').innerHTML=[['all','Tổng số xe',N],['running','Đang vận hành',cnt.running],['idle','Chờ lệnh',cnt.idle],['maint','Bảo dưỡng / sự cố',cnt.maint],['off','Không hoạt động',cnt.off]]
+    .map(([k,l,n])=>`<div class="stat ${filter===k?'on':''}" data-f="${k}"><b>${n}</b><span>${l}</span></div>`).join('');
+  $('bar').innerHTML=Object.keys(ST).map(k=>`<div style="width:${cnt[k]/N*100}%;background:${COL[k]}"></div>`).join('');
+  $('leg').innerHTML=`<span>Tỷ lệ sử dụng: <b style="color:var(--tx)">${Math.round(cnt.running/N*100)}%</b></span>`+Object.keys(ST).map(k=>`<span><i style="background:${COL[k]}"></i>${ST[k]} ${cnt[k]}</span>`).join('');
+  $('alerts').textContent=low.length?'⚠ Nhiên liệu/pin thấp: '+low.join(', '):'';
+  const card=v=>{const d=get(v.id),f=d.fuel??100;
+    return `<button class="v ${d.status}" data-id="${v.id}">
+    <div class="top"><span class="id">${full(v.id)}</span><span class="badge"><span class="dot"></span>${ST[d.status]}</span></div>
+    <div class="op"><div class="av">${d.operator?esc(init(d.operator)):'–'}</div><div><b>${d.operator?esc(d.operator):'<span class="mu">Chưa phân công</span>'}</b><span>${d.task?esc(d.task):'—'}</span></div></div>
+    <div class="kv"><span>Nhiên liệu/pin</span><b>${f}%</b></div><div class="meter ${f<=20?'low':f<=50?'mid':''}"><div style="width:${f}%"></div></div>
+    <div class="kv"><span>Giờ máy</span><b>${live(d).toFixed(1)} giờ</b></div>
+    <div class="kv"><span>${d.since&&d.status!=='off'?'Trạng thái được':'Trạng thái'}</span><b>${d.since&&d.status!=='off'?dur(Date.now()-d.since):'—'}</b></div></button>`};
+  const list=t=>VEHICLES.filter(v=>v.type===t&&(filter==='all'||get(v.id).status===filter)).map(card).join('')||'<div class="mu">Không có xe phù hợp</div>';
+  $('gRS').innerHTML=list('RS');$('gFL').innerHTML=list('FL');
+}
+document.addEventListener('click',e=>{
+  const s=e.target.closest('.stat');if(s){filter=filter===s.dataset.f?'all':s.dataset.f;render();return}
+  const c=e.target.closest('.v');if(c)openDlg(c.dataset.id)});
+$('fFuel').oninput=()=>$('fuelV').textContent=$('fFuel').value;
+function openDlg(id){cur=id;const d=get(id);
+  $('dTitle').textContent=full(id);$('dInfo').textContent='Giờ máy tích lũy: '+live(d).toFixed(1)+' giờ';
+  $('fStatus').value=d.status;$('fOp').value=d.operator;$('fTask').value=d.task;$('fFuel').value=d.fuel??100;$('fuelV').textContent=d.fuel??100;
+  $('hist').innerHTML='<b style="font-size:13px">Lịch sử ca làm việc</b>'+((d.log||[]).slice().reverse().map(l=>`<div class="h"><time>${fmt(l.t)}</time><span><b style="color:${COL[l.s]}">${ST[l.s]}</b> · ${esc(l.o||'—')} · ${esc(l.k||'—')}</span></div>`).join('')||'<div class="mu" style="margin-top:6px">Chưa có lịch sử</div>');
+  $('dlg').showModal()}
+$('dCancel').onclick=()=>$('dlg').close();
+$('dClear').onclick=()=>{$('fStatus').value='idle';$('fOp').value='';$('fTask').value='';$('dSave').click()};
+$('dSave').onclick=async()=>{
+  const old=get(cur),status=$('fStatus').value,operator=$('fOp').value.trim(),task=$('fTask').value.trim(),fuel=+$('fFuel').value,now=Date.now();
+  const changed=status!==old.status||operator!==old.operator||task!==old.task;
+  let hours=old.hours||0;if(changed&&old.status==='running'&&old.since)hours+=(now-old.since)/36e5;
+  const log=(old.log||[]).slice(-29);if(changed)log.push({t:now,s:status,o:operator,k:task});
+  const data={status,operator,task,fuel,hours,log,since:changed||!old.since?now:old.since};
+  state[cur]=data;render();$('dlg').close();
+  try{await store.save(cur,data)}catch(e){toast('Không lưu được lên hệ thống chung')}
+};
+function toast(m){const t=$('toast');t.textContent=m;t.style.display='block';setTimeout(()=>t.style.display='none',2800)}
+function ingest(rows){rows.forEach(r=>{if(r&&r.vid)state[r.vid]=r.data});$('sync').textContent='Trực tiếp';if(!$('dlg').open)render()}
+setInterval(()=>$('clock').textContent=new Date().toLocaleTimeString('vi-VN'),1000);
+setInterval(()=>{if(!$('dlg').open)render()},30000);render();
+
+(async()=>{
+  store={save:async()=>toast('Chế độ cục bộ: chưa đồng bộ giữa các máy')};$('sync').textContent='Chế độ cục bộ';
+  try{
+    const db=window.claude&&await claude.use('db');
+    if(db){const col=db.collection('vehicles');
+      store={save:(id,data)=>col.doc(id.replace('-','')).set({vid:id,data})};
+      col.onSnapshot(s=>ingest(s.docs.map(d=>d.data())),()=>$('sync').textContent='Mất kết nối');return}
+  }catch(e){}
+  if(CONFIG.supabaseUrl){
+    const H={apikey:CONFIG.supabaseKey,Authorization:'Bearer '+CONFIG.supabaseKey,'Content-Type':'application/json'},U=CONFIG.supabaseUrl+'/rest/v1/vehicles';
+    store={save:async(id,data)=>{const r=await fetch(U,{method:'POST',headers:{...H,Prefer:'resolution=merge-duplicates'},body:JSON.stringify({id,data})});if(!r.ok)throw 0}};
+    const pull=async()=>{try{const r=await fetch(U+'?select=*',{headers:H});ingest((await r.json()).map(x=>({vid:x.id,data:x.data})))}catch(e){$('sync').textContent='Mất kết nối'}};
+    pull();setInterval(pull,5000);
+  }
+})();
+</script>
+</body>
+</html>
